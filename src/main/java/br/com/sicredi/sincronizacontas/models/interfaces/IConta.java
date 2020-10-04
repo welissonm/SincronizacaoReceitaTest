@@ -6,13 +6,9 @@ public interface IConta {
     
     public void setAgencia(int agencia);
 
-    public Float getSaldo();
+    // public Float getSaldo();
 
-    public void setSaldo(Float saldo);
-
-    public char getStatus();
-
-    public void setStatus(char status);
+    // public void setSaldo(Float saldo);
 
     public String getNumero();
 

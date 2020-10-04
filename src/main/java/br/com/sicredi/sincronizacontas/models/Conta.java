@@ -1,50 +1,63 @@
 package br.com.sicredi.sincronizacontas.models;
 
+import java.util.Set;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import br.com.sicredi.sincronizacontas.models.interfaces.IConta;
 
 @Entity
-@Table(name="tb_contas", schema="public")
-public class Conta implements IConta{
+@Table(
+    name="tb_contas", 
+    schema="public", 
+    uniqueConstraints = @UniqueConstraint(columnNames = { "agencia", "numero" })
+)
+
+public class Conta implements IConta, java.io.Serializable  {
+
+    /**
+     *
+     */
+    private static final long serialVersionUID = 7710221601005398013L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
+
+    @Column(name = "agencia", nullable = false)
     private int agencia;
-    // private int numero;
-    // private char digito;
+
+    @Column(name="numero", nullable = false)
     private String numero;
-    private Float saldo;
-    private char status;
-    //sicronizado na Receita federal
-    private boolean sincronizado;
+    
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "conta")
+    private Set<HistoricoConta> historicoConta;
 
     public Conta(){
-        this(0L, 0, "", 0.0F, '.', false);
+        this(0L, 0, "");
     }
 
-    // public Conta(Long id, int agencia, int numero, char digito, Float saldo, char status){
-    public Conta(Long id, int agencia, String numero, Float saldo, char status, boolean sincronizado){
+    public Conta(Long id, int agencia, String numero){
         this.id = id;
         this.agencia = agencia;
-        // this.numero = numero;
-        // this.digito = digito;
         this.numero = numero;
-        this.saldo = saldo;
-        this.status = status;
-        this.sincronizado = sincronizado;
     }
 
-    public Long getId() {
-        return id;
+    
+    public long getId() {
+        return this.id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -52,56 +65,29 @@ public class Conta implements IConta{
         return agencia;
     }
 
-    public String getFromatedAgencia(){
-        return String.format("%04d", this.agencia);
-    }
-
     public void setAgencia(int agencia) {
         this.agencia = agencia;
-    }
-
-    // public int getNumero() {
-    //     return numero;
-    // }
-
-    // public void setNumero(int numero) {
-    //     this.numero = numero;
-    // }
-
-    // public char getDigito() {
-    //     return digito;
-    // }
-
-    // public void setDigito(char digito) {
-    //     this.digito = digito;
-    // }
-
-    public Float getSaldo() {
-        return saldo;
-    }
-
-    public void setSaldo(Float saldo) {
-        this.saldo = saldo;
-    }
-
-    public char getStatus() {
-        return status;
-    }
-
-    public void setStatus(char status) {
-        this.status = status;
     }
 
     public String getNumero() {
         return numero;
     }
 
-    public String getFormatedNumero(){
-        return  String.format("%06d", Integer.parseInt(numero.replace("-", "")));
-    }
-
     public void setNumero(String numero) {
         this.numero = numero;
+    }
+    
+	public Set<HistoricoConta> getHistoricoConta() {
+		return this.historicoConta;
+    }
+    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + agencia;
+        result = prime * result + ((numero == null) ? 0 : numero.hashCode());
+        return result;
     }
 
     @Override
@@ -111,19 +97,8 @@ public class Conta implements IConta{
             strBuffer.append("id=").append(id).append(',');
         }
         strBuffer.append("agencia=").append(agencia).append(',');
-        strBuffer.append("numero=").append(numero).append(',');
-        strBuffer.append("saldo=").append(saldo).append(',');
-        strBuffer.append("status=").append(status).append('}');
+        strBuffer.append("numero=").append(numero).append('}');
         return strBuffer.toString();
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + agencia;
-        result = prime * result + ((numero == null) ? 0 : numero.hashCode());
-        return result;
     }
 
     @Override
@@ -144,17 +119,9 @@ public class Conta implements IConta{
             return false;
         return true;
     }
-
-    public boolean isSincronizado() {
-        return sincronizado;
+    
+    public static long getSerialversionuid() {
+        return serialVersionUID;
     }
-
-    public void setSincronizado(boolean sincronizado) {
-        this.sincronizado = sincronizado;
-    }
-
-    
-    
-    
 
 }
