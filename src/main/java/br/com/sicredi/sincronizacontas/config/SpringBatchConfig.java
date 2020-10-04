@@ -1,5 +1,7 @@
 package br.com.sicredi.sincronizacontas.config;
 
+import java.io.IOException;
+
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.DefaultBatchConfigurer;
@@ -15,9 +17,11 @@ import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 import br.com.sicredi.sincronizacontas.dto.ContaDTO;
@@ -26,31 +30,47 @@ import br.com.sicredi.sincronizacontas.models.Conta;
 @Configuration
 @EnableBatchProcessing
 public class SpringBatchConfig extends DefaultBatchConfigurer {
-// public class SpringBatchConfig {
-    
+    // public class SpringBatchConfig {
+
+        
+  @Autowired
+  public JobBuilderFactory jobBuilderFactory;
+
+  @Autowired
+  public StepBuilderFactory stepBuilderFactory;
+  
     @Bean
-    public Job job(
-        JobBuilderFactory jobBuilderFactory, 
-        StepBuilderFactory stepBuilderFactory, 
-        ItemReader<ContaDTO> itemReader,
-        ItemProcessor<ContaDTO,Conta> itemProcessor,
-        ItemWriter<Conta> itemWrite)
+    public Job job( JobCompletionNotificationListener listener, Step step)
     {
-        Step step = stepBuilderFactory.get("TEL-file-load")
-                    .<ContaDTO, Conta>chunk(100)
-                    .reader(itemReader)
-                    .processor(itemProcessor)
-                    .writer(itemWrite)
-                    .build();
         return jobBuilderFactory.get("ETL-Load")
-        .incrementer(new RunIdIncrementer())
-        .start(step)
-        .build();
+            .incrementer(new RunIdIncrementer())
+            .listener(listener)
+            .flow(step)
+            .end()
+            .build();
     }
 
     @Bean
-    public FlatFileItemReader<ContaDTO> fileItemReader(@Value("${input}") Resource resource){
+    public Step step
+    (
+        ItemReader<ContaDTO> itemReader, 
+        ItemProcessor<ContaDTO, Conta> itemProcessor,
+        ItemWriter<Conta> itemWrite
+    )
+    {
+        return stepBuilderFactory.get("TEL-file-load")
+            .<ContaDTO, Conta>chunk(100)
+            .reader(itemReader)
+            .processor(itemProcessor)
+            .writer(itemWrite)
+            .build();
+    }
+
+    @Bean
+    public FlatFileItemReader<ContaDTO> fileItemReader(@Value("${input}") Resource resource) throws IOException {
         FlatFileItemReader<ContaDTO> flatFileItemReader = new FlatFileItemReader<>();
+        // ClassPathResource classPathResource = new ClassPathResource(resource.getURL().toString());
+        // flatFileItemReader.setResource(classPathResource);
         flatFileItemReader.setResource(resource);
         flatFileItemReader.setName("CSV-Reader");
         flatFileItemReader.setLinesToSkip(1);

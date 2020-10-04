@@ -26,7 +26,7 @@ public class Processor implements ItemProcessor<ContaDTO, Conta> {
     private static final Logger log = LoggerFactory.getLogger(Processor.class);
     
     @Override
-    public Conta process(ContaDTO contaDto) throws Exception{
+    public Conta process(final ContaDTO contaDto) throws Exception{
         log.info(String.format("Processano %s", contaDto));
         Conta conta = this.contaService.find(new Conta(0L, contaDto.getAgencia(), contaDto.getNumero()));
         conta = conta != null ? conta : new Conta(0L, contaDto.getAgencia(), contaDto.getNumero());
