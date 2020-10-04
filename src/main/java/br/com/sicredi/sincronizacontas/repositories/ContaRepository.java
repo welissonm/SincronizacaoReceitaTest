@@ -19,18 +19,14 @@ public interface ContaRepository extends JpaRepository<Conta, Long> {
         // DetachedCriteria subquery = DetachedCriteria.forClass(Skill.class,"skill");
         ArrayList<Conta> contas = new ArrayList<>();
         for( Conta conta : list){
-            Optional<Conta> result = this.find(conta);
-            if(!result.isEmpty() && result.equals(conta)){
-                contas.add(result.get());
+            Conta result = this.findByAgenciaAndNumero(conta.getAgencia(), conta.getNumero());
+            if(result != null && result.equals(conta)){
+                contas.add(result);
             }
         }
         return contas;
     }
 
-    public default Optional<Conta> find(Conta conta){
-        Example<Conta> example = Example.of(conta, ExampleMatcher.matching());
-        Optional<Conta> result = this.findOne(example);
-        return result;
-    }
+    public Conta findByAgenciaAndNumero(int agencia, String numero);
 }
 

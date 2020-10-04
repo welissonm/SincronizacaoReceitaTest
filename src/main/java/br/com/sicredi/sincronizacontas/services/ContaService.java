@@ -23,7 +23,7 @@ public class ContaService {
     }
 
     public Conta find(Conta conta){
-        return this.ContaRepostiry.find(conta).get();
+        return this.ContaRepostiry.findByAgenciaAndNumero(conta.getAgencia(), conta.getNumero());
     }
 
     public List<Conta> saveInBatch(List<Conta> contas){

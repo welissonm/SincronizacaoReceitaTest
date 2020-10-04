@@ -67,11 +67,11 @@ public class RelatorioConta implements Serializable{
     }
 
     public RelatorioConta(Float saldo, char status, boolean sincronizado, Date data, Date dataSicronizacao) {
-        this(0.0F, status, sincronizado, data, dataSicronizacao, null);
+        this(saldo, status, sincronizado, data, dataSicronizacao, null);
     }
 
     public RelatorioConta(Float saldo, char status, boolean sincronizado, Date data, Date dataSicronizacao, Conta conta) {
-        this(0L, 0.0F, status, sincronizado, data, dataSicronizacao, conta);
+        this(0L, saldo, status, sincronizado, data, dataSicronizacao, conta);
     }
 
     public RelatorioConta(Long id, Float saldo, char status, boolean sincronizado, Date data, Date dataSicronizacao, Conta conta) {
