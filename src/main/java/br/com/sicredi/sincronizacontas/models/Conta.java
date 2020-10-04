@@ -1,7 +1,10 @@
 package br.com.sicredi.sincronizacontas.models;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -17,11 +20,11 @@ import br.com.sicredi.sincronizacontas.models.interfaces.IConta;
 
 @Entity
 @Table(
-    name="tb_contas", 
-    schema="public", 
+    name="tb_contas",
+    schema="public",
     uniqueConstraints = @UniqueConstraint(columnNames = { "agencia", "numero" })
 )
-
+@AttributeOverride( name="id", column = @Column(name="id_conta"))
 public class Conta implements IConta, java.io.Serializable  {
 
     /**
@@ -30,7 +33,7 @@ public class Conta implements IConta, java.io.Serializable  {
     private static final long serialVersionUID = 7710221601005398013L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "agencia", nullable = false)
@@ -39,8 +42,10 @@ public class Conta implements IConta, java.io.Serializable  {
     @Column(name="numero", nullable = false)
     private String numero;
     
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "conta")
-    private Set<HistoricoConta> historicoConta;
+    // @OneToMany
+    // @JoinColumn(name = "id_conta")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "conta")
+    private List<RelatorioConta> relatorioConta;
 
     public Conta(){
         this(0L, 0, "");
@@ -50,6 +55,7 @@ public class Conta implements IConta, java.io.Serializable  {
         this.id = id;
         this.agencia = agencia;
         this.numero = numero;
+        this.relatorioConta = new ArrayList<>();
     }
 
     
@@ -57,7 +63,7 @@ public class Conta implements IConta, java.io.Serializable  {
         return this.id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -77,8 +83,12 @@ public class Conta implements IConta, java.io.Serializable  {
         this.numero = numero;
     }
     
-	public Set<HistoricoConta> getHistoricoConta() {
-		return this.historicoConta;
+	public List<RelatorioConta> getHistoricoConta() {
+		return this.relatorioConta;
+    }
+
+    public void setHistoricoConta(List<RelatorioConta> historicoConta) {
+        this.relatorioConta = historicoConta;
     }
     
     @Override

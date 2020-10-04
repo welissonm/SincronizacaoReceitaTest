@@ -2,6 +2,7 @@ package br.com.sicredi.sincronizacontas.config;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.DefaultBatchConfigurer;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -24,8 +25,8 @@ import br.com.sicredi.sincronizacontas.models.Conta;
 
 @Configuration
 @EnableBatchProcessing
-// public class SpringBatchConfig extends DefaultBatchConfigurer {
-public class SpringBatchConfig {
+public class SpringBatchConfig extends DefaultBatchConfigurer {
+// public class SpringBatchConfig {
     
     @Bean
     public Job job(

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import br.com.sicredi.sincronizacontas.dto.ContaDTO;
 import br.com.sicredi.sincronizacontas.models.Conta;
-import br.com.sicredi.sincronizacontas.models.HistoricoConta;
+import br.com.sicredi.sincronizacontas.models.RelatorioConta;
 import br.com.sicredi.sincronizacontas.services.ContaService;
 import br.com.sicredi.sincronizacontas.services.ReceitaService;
 
@@ -29,7 +29,7 @@ public class Processor implements ItemProcessor<ContaDTO, Conta> {
     public Conta process(ContaDTO contaDto) throws Exception{
         log.info(String.format("Processano %s", contaDto));
         Conta conta = new Conta(0L, contaDto.getAgencia(), contaDto.getNumero());
-        HistoricoConta historico = new HistoricoConta(contaDto.getSaldo(), contaDto.getStatus(), false, new Date(), null);
+        RelatorioConta relatorioConta = new RelatorioConta(contaDto.getSaldo(), contaDto.getStatus(), false, new Date(), null);
         boolean result = false;
         try{
             result = receitaService.atualizarConta(
@@ -44,8 +44,8 @@ public class Processor implements ItemProcessor<ContaDTO, Conta> {
             //para que outra instancia do servico possa tentar sincronizar novamente.
         } finally {
             // conta.setSincronizado(result);
-            historico.setSincronizado(result);
-            historico.setDataSicronizacao(new Date());
+            relatorioConta.setSincronizado(result);
+            relatorioConta.setDataSicronizacao(new Date());
         }
         return conta;
     }
