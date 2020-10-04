@@ -6,6 +6,7 @@ import java.util.Date;
 import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -53,7 +54,7 @@ public class RelatorioConta implements Serializable{
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataSicronizacao;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_conta", foreignKey = @ForeignKey(name = "fk_relatorio_conta_conta"), nullable = false)
     private Conta conta;
 

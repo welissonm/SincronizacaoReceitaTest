@@ -44,7 +44,7 @@ public class Conta implements IConta, java.io.Serializable  {
     
     // @OneToMany
     // @JoinColumn(name = "id_conta")
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "conta")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "conta")
     private List<RelatorioConta> relatorioConta;
 
     public Conta(){
@@ -83,12 +83,12 @@ public class Conta implements IConta, java.io.Serializable  {
         this.numero = numero;
     }
     
-	public List<RelatorioConta> getHistoricoConta() {
+	public List<RelatorioConta> getRelatorioConta() {
 		return this.relatorioConta;
     }
 
-    public void setHistoricoConta(List<RelatorioConta> historicoConta) {
-        this.relatorioConta = historicoConta;
+    public void setRelatorioConta(List<RelatorioConta> relatorioConta) {
+        this.relatorioConta = relatorioConta;
     }
     
     @Override

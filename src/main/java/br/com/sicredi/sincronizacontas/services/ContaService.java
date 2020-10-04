@@ -25,4 +25,10 @@ public class ContaService {
     public Conta find(Conta conta){
         return this.ContaRepostiry.find(conta).get();
     }
+
+    public List<Conta> saveInBatch(List<Conta> contas){
+        contas = this.ContaRepostiry.saveAll(contas);
+        this.ContaRepostiry.flush();
+        return contas;
+    }
 }

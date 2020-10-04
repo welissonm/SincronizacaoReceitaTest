@@ -18,10 +18,10 @@ import org.slf4j.LoggerFactory;
 @Component
 public class Processor implements ItemProcessor<ContaDTO, Conta> {
 
-    // @Autowired
-    // private ContaService contaService;
     @Autowired
-    ReceitaService receitaService;
+    private ContaService contaService;
+    @Autowired
+    private ReceitaService receitaService;
 
     private static final Logger log = LoggerFactory.getLogger(Processor.class);
     
@@ -46,6 +46,8 @@ public class Processor implements ItemProcessor<ContaDTO, Conta> {
             // conta.setSincronizado(result);
             relatorioConta.setSincronizado(result);
             relatorioConta.setDataSicronizacao(new Date());
+            conta.getRelatorioConta().add(relatorioConta);
+            relatorioConta.setConta(conta);
         }
         return conta;
     }

@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import br.com.sicredi.sincronizacontas.models.Conta;
-import br.com.sicredi.sincronizacontas.repositories.ContaRepository;
+import br.com.sicredi.sincronizacontas.services.ContaService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +18,12 @@ public class DBItemWrite implements ItemWriter<Conta> {
     private static final Logger log = LoggerFactory.getLogger(DBItemWrite.class);
     
     @Autowired
-    private ContaRepository contaRepository;
+    private ContaService contaService;
 
     @Override
     public void write(List<? extends Conta> contas) throws Exception {
         log.info("Data saved for Contas" + contas);
-        Iterable<? extends Conta> _contas = this.contaRepository.saveAll(contas);
+        Iterable<Conta> _contas = this.contaService.saveInBatch((List<Conta>)contas);
     }
     
 }
