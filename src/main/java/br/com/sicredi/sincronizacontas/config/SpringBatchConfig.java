@@ -1,5 +1,6 @@
 package br.com.sicredi.sincronizacontas.config;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.springframework.batch.core.Job;
@@ -36,13 +37,13 @@ public class SpringBatchConfig {
     public Job job(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory,
             ItemReader<Conta> itemReader, ItemProcessor<Conta, Conta> itemProcessor,
             ItemWriter<? super Conta> itemWrite) {
-        Step step = stepBuilderFactory.get("TEL-file-load").<Conta, Conta>chunk(100).reader(itemReader)
+        Step step = stepBuilderFactory.get("SICRED-file-load").<Conta, Conta>chunk(100).reader(itemReader)
                 .processor(itemProcessor).writer(itemWrite).build();
         return jobBuilderFactory.get("ETL-Load").incrementer(new RunIdIncrementer()).start(step).build();
     }
 
     @Bean
-    public FlatFileItemReader<Conta> fileItemReader(@Value("${input}") Resource resource) {
+    public FlatFileItemReader<Conta> fileItemReader(@Value("${input-file}") Resource resource) {
         FlatFileItemReader<Conta> flatFileItemReader = new FlatFileItemReader<>();
         flatFileItemReader.setResource(resource);
         flatFileItemReader.setName("CSV-Reader");
@@ -52,14 +53,15 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public FlatFileItemWriter<Conta> writerItemFile(@Value("${output}") Resource resource,
+    public FlatFileItemWriter<Conta> writerItemFile(@Value("${output-file}") Resource resource,
             FlatFileHeaderCallback headerCallback) {
         // Cria uma instancia write
         FlatFileItemWriter<Conta> writer = new FlatFileItemWriter<>();
         writer.setHeaderCallback(headerCallback);
         if (!resource.exists()) {
             try {
-                resource.createRelative(".");
+                File file = resource.getFile();
+                file.createNewFile();
             } catch (IOException e) {
                 // TODO enviar log de erro e mensagem atraves do servico de mensageria
                 e.printStackTrace();

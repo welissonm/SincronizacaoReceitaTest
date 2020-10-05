@@ -1,23 +1,21 @@
 package br.com.sicredi.sincronizacontas;
 
 import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.DisplayName;
-// import org.junit.jupiter.api.Nested;
 
 import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+
 import org.springframework.boot.test.context.SpringBootTest;
-
-// import br.com.sicredi.sincronizacontas.models.Conta;
-// import br.com.sicredi.sincronizacontas.repositories.ContaRepository;
-
-// import static org.assertj.core.api.Assertions.assertThat;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootTest
-// @DataJpaTest
+@EnableAutoConfiguration
+@EntityScan(basePackages = {"br.com.sicredi.sincronizacontas"})
+@EnableJpaRepositories(value = {"br.com.sicredi.sincronizacontas"})
 class SincronizacontasApplicationTests {
 
-	@Autowired
+	// @Autowired
 	// ContaRepository contaRepository;
 
 
