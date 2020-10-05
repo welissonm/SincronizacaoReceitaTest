@@ -1,4 +1,4 @@
-package br.com.sicredi.sincronizacontas.batchs;
+package br.com.sicredi.sincronizacontas.batch;
 
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;

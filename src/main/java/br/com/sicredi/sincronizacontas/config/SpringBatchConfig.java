@@ -1,8 +1,9 @@
 package br.com.sicredi.sincronizacontas.config;
 
+import java.io.IOException;
+
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.DefaultBatchConfigurer;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -10,10 +11,14 @@ import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.file.FlatFileHeaderCallback;
 import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
+import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
+import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -26,35 +31,58 @@ import br.com.sicredi.sincronizacontas.models.Conta;
 @EnableBatchProcessing
 // public class SpringBatchConfig extends DefaultBatchConfigurer {
 public class SpringBatchConfig {
-    
+
     @Bean
-    public Job job(
-        JobBuilderFactory jobBuilderFactory, 
-        StepBuilderFactory stepBuilderFactory, 
-        ItemReader<Conta> itemReader,
-        ItemProcessor<Conta,Conta> itemProcessor,
-        ItemWriter<? super Conta> itemWrite)
-    {
-        Step step = stepBuilderFactory.get("TEL-file-load")
-                    .<Conta, Conta>chunk(100)
-                    .reader(itemReader)
-                    .processor(itemProcessor)
-                    .writer(itemWrite)
-                    .build();
-        return jobBuilderFactory.get("ETL-Load")
-        .incrementer(new RunIdIncrementer())
-        .start(step)
-        .build();
+    public Job job(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory,
+            ItemReader<Conta> itemReader, ItemProcessor<Conta, Conta> itemProcessor,
+            ItemWriter<? super Conta> itemWrite) {
+        Step step = stepBuilderFactory.get("TEL-file-load").<Conta, Conta>chunk(100).reader(itemReader)
+                .processor(itemProcessor).writer(itemWrite).build();
+        return jobBuilderFactory.get("ETL-Load").incrementer(new RunIdIncrementer()).start(step).build();
     }
 
     @Bean
-    public FlatFileItemReader<Conta> fileItemReader(@Value("${input}") Resource resource){
+    public FlatFileItemReader<Conta> fileItemReader(@Value("${input}") Resource resource) {
         FlatFileItemReader<Conta> flatFileItemReader = new FlatFileItemReader<>();
         flatFileItemReader.setResource(resource);
         flatFileItemReader.setName("CSV-Reader");
         flatFileItemReader.setLinesToSkip(1);
         flatFileItemReader.setLineMapper(this.lineMapper());
         return flatFileItemReader;
+    }
+
+    @Bean
+    public FlatFileItemWriter<Conta> writerItemFile(@Value("${output}") Resource resource,
+            FlatFileHeaderCallback headerCallback) {
+        // Cria uma instancia write
+        FlatFileItemWriter<Conta> writer = new FlatFileItemWriter<>();
+        writer.setHeaderCallback(headerCallback);
+        if (!resource.exists()) {
+            try {
+                resource.createRelative(".");
+            } catch (IOException e) {
+                // TODO enviar log de erro e mensagem atraves do servico de mensageria
+                e.printStackTrace();
+            }
+        }
+        //Seta o local para o arquivo de saida
+        writer.setResource(resource);
+         
+        //Todas as repetições do job devem "anexar" ao mesmo arquivo de saída
+        writer.setAppendAllowed(true);
+         
+        //Sequencia de valores dos nomes dos campos com base nas propriedades do objeto
+        writer.setLineAggregator(new DelimitedLineAggregator<Conta>() {
+            {
+                setDelimiter(";");
+                setFieldExtractor(new BeanWrapperFieldExtractor<Conta>() {
+                    {
+                        setNames(new String[] {"agencia", "numero","saldo", "status", "sincronizado"});
+                    }
+                });
+            }
+        });
+        return writer;
     }
 
     @Bean
