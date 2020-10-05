@@ -39,3 +39,5 @@ Forma utilizados as seguintes tecnologias:
 1. Springboot como *server container*;
 2. Spring Batch como ferramenta de processamento de *IO* em batch;
 3. Banco de dados em memória *H2*.
+
+O serviço possui um contexto web respondendo em host:8080/sicredi/worker e o end-point /load para o início da execução via chamada http. 
