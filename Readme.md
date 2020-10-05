@@ -30,6 +30,7 @@ Um serviço de processamento em batch recebe como argumento um arquivo no format
 1. Ler o arquivo passado como valor do argumento *input-file*;
 2. Processa o arquivo junto ao serviço (fake) da Receita Federal;
 3. Concluído o processamento, um novo arquivo é gerado com o nome e localização passada como valor do argumento *output-file*.
+4. O processamento esta agendado para ocorrer todos os dias a partir das 6 AM.
 
 >A classe *ReceitaService* foi incorporado no projeto representando uma chamada de uma API externa.
 
