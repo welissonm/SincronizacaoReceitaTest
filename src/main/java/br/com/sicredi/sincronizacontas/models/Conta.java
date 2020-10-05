@@ -7,7 +7,9 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import br.com.sicredi.sincronizacontas.models.interfaces.IConta;
-
+/**
+ * Entidade conta para persistencia dos dados
+ */
 @Entity
 @Table(name="tb_contas", schema="public")
 public class Conta implements IConta{
@@ -25,7 +27,11 @@ public class Conta implements IConta{
     private boolean sincronizado;
 
     public Conta(){
-        this(0L, 0, "", 0.0F, '.', false);
+        this(0L, 0, "");
+    }
+
+    public Conta(Long id, int agencia, String numero){
+        this(id, agencia, numero, 0.0F, '.', false);
     }
 
     // public Conta(Long id, int agencia, int numero, char digito, Float saldo, char status){
@@ -59,22 +65,6 @@ public class Conta implements IConta{
     public void setAgencia(int agencia) {
         this.agencia = agencia;
     }
-
-    // public int getNumero() {
-    //     return numero;
-    // }
-
-    // public void setNumero(int numero) {
-    //     this.numero = numero;
-    // }
-
-    // public char getDigito() {
-    //     return digito;
-    // }
-
-    // public void setDigito(char digito) {
-    //     this.digito = digito;
-    // }
 
     public Float getSaldo() {
         return saldo;

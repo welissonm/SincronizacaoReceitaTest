@@ -21,11 +21,15 @@ import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
 import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 
+import br.com.sicredi.sincronizacontas.batch.JobCompletionNotificationListener;
+import br.com.sicredi.sincronizacontas.dto.ContaDTO;
 import br.com.sicredi.sincronizacontas.models.Conta;
 
 @Configuration
@@ -33,18 +37,61 @@ import br.com.sicredi.sincronizacontas.models.Conta;
 // public class SpringBatchConfig extends DefaultBatchConfigurer {
 public class SpringBatchConfig {
 
+    @Autowired
+    public JobBuilderFactory jobBuilderFactory;
+
+    @Autowired
+    public StepBuilderFactory stepBuilderFactory;
+    
     @Bean
-    public Job job(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory,
-            ItemReader<Conta> itemReader, ItemProcessor<Conta, Conta> itemProcessor,
-            ItemWriter<? super Conta> itemWrite) {
-        Step step = stepBuilderFactory.get("SICRED-file-load").<Conta, Conta>chunk(100).reader(itemReader)
-                .processor(itemProcessor).writer(itemWrite).build();
-        return jobBuilderFactory.get("ETL-Load").incrementer(new RunIdIncrementer()).start(step).build();
+    public Job job( JobCompletionNotificationListener listener, Step step)
+    {
+        return jobBuilderFactory.get("Sincronizar Contas")
+            .incrementer(new RunIdIncrementer())
+            .listener(listener)
+            .flow(step)
+            .end()
+            .build();
+    }
+
+    //step para persistencia das contas em banco de dados
+    @Bean
+    @Profile("prodution")
+    public Step step
+    (
+        ItemReader<ContaDTO> itemReader, 
+        ItemProcessor<ContaDTO, Conta> itemProcessor,
+        ItemWriter<Conta> itemWrite
+    )
+    {
+        return stepBuilderFactory.get("contas-file-load")
+            .<ContaDTO, Conta>chunk(100)
+            .reader(itemReader)
+            .processor(itemProcessor)
+            .writer(itemWrite)
+            .build();
+    }
+
+    //step para persistencia das contas em arquivos
+    @Bean
+    public Step step2
+    (
+        ItemReader<ContaDTO> itemReader, 
+        ItemProcessor<ContaDTO, ContaDTO> itemProcessor,
+        ItemWriter<ContaDTO> itemWrite
+    )
+    {
+        return stepBuilderFactory.get("contas-file-load")
+            .<ContaDTO, ContaDTO>chunk(100)
+            .reader(itemReader)
+            .processor(itemProcessor)
+            .writer(itemWrite)
+            .build();
     }
 
     @Bean
-    public FlatFileItemReader<Conta> fileItemReader(@Value("${input-file}") Resource resource) {
-        FlatFileItemReader<Conta> flatFileItemReader = new FlatFileItemReader<>();
+    public FlatFileItemReader<ContaDTO>  fileItemReader(@Value("${input-file}") Resource resource) {
+        FlatFileItemReader<ContaDTO>flatFileItemReader = new FlatFileItemReader<>();
         flatFileItemReader.setResource(resource);
         flatFileItemReader.setName("CSV-Reader");
         flatFileItemReader.setLinesToSkip(1);
@@ -53,10 +100,10 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public FlatFileItemWriter<Conta> writerItemFile(@Value("${output-file}") Resource resource,
+    public FlatFileItemWriter<ContaDTO> writerItemFile(@Value("${output-file}") Resource resource,
             FlatFileHeaderCallback headerCallback) {
         // Cria uma instancia write
-        FlatFileItemWriter<Conta> writer = new FlatFileItemWriter<>();
+        FlatFileItemWriter<ContaDTO> writer = new FlatFileItemWriter<>();
         writer.setHeaderCallback(headerCallback);
         if (!resource.exists()) {
             try {
@@ -74,10 +121,10 @@ public class SpringBatchConfig {
         writer.setAppendAllowed(true);
          
         //Sequencia de valores dos nomes dos campos com base nas propriedades do objeto
-        writer.setLineAggregator(new DelimitedLineAggregator<Conta>() {
+        writer.setLineAggregator(new DelimitedLineAggregator<ContaDTO>() {
             {
                 setDelimiter(";");
-                setFieldExtractor(new BeanWrapperFieldExtractor<Conta>() {
+                setFieldExtractor(new BeanWrapperFieldExtractor<ContaDTO>() {
                     {
                         setNames(new String[] {"agencia", "numero","saldo", "status", "sincronizado"});
                     }
@@ -88,14 +135,14 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public LineMapper<Conta> lineMapper(){
-        DefaultLineMapper<Conta> defaultLineMapper = new DefaultLineMapper<>();
+    public LineMapper<ContaDTO> lineMapper(){
+        DefaultLineMapper<ContaDTO> defaultLineMapper = new DefaultLineMapper<>();
         DelimitedLineTokenizer lineTokenizer = new DelimitedLineTokenizer();
         lineTokenizer.setDelimiter(";");
         lineTokenizer.setStrict(false);
         lineTokenizer.setNames(new String[] {"agencia", "numero","saldo", "status"});
-        BeanWrapperFieldSetMapper<Conta> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
-        fieldSetMapper.setTargetType(Conta.class);
+        BeanWrapperFieldSetMapper<ContaDTO> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
+        fieldSetMapper.setTargetType(ContaDTO.class);
         defaultLineMapper.setLineTokenizer(lineTokenizer);
         defaultLineMapper.setFieldSetMapper(fieldSetMapper);
         return defaultLineMapper;

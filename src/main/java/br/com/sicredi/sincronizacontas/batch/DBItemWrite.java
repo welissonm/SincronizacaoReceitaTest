@@ -4,15 +4,18 @@ import java.util.List;
 
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Component;
 
 import br.com.sicredi.sincronizacontas.models.Conta;
 import br.com.sicredi.sincronizacontas.repositories.ContaRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+/**
+ * Persiste as contas no banco de dados
+ */
 
-// @Component
+@Component
 public class DBItemWrite implements ItemWriter<Conta> {
 
     private static final Logger log = LoggerFactory.getLogger(DBItemWrite.class);
