@@ -48,6 +48,8 @@ public class LoadController {
             e.printStackTrace();
         } catch (final JobParametersInvalidException e) {
             e.printStackTrace();
+        } catch (Exception e){
+            e.printStackTrace();
         }
         finally{
             return jobExecution != null ? jobExecution.getStatus() : BatchStatus.FAILED;
